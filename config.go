@@ -45,12 +45,12 @@ func readRecord(rec ndb.Record) (*config, error) {
 		datadir = "/tmp/altid"
 	}
 	conf := &config{
-		log:    path.Join(datadir, "discord"),
+		log: path.Join(datadir, *srv),
 	}
 	for _, tup := range rec {
 		switch tup.Attr {
 		case "log":
-			conf.log = tup.Val
+			conf.log = path.Join(tup.Val, *srv)
 		case "user":
 			conf.user = tup.Val
 		}

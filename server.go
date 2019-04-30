@@ -54,7 +54,6 @@ func (s *server) Handle(bufname string, l *cm.Lexer) error {
 			if err != nil {
 				return err
 			}
-			fmt.Println(cid)
 			_, err = s.dg.ChannelMessageSend(cid, m.String())
 			return err
 		case cm.ErrorText:

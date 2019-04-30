@@ -18,8 +18,14 @@ func (s *server) ready(ds *discordgo.Session, event *discordgo.Ready) {
 			s.chanCreate(ds, &discordgo.ChannelCreate{c})
 		}
 	}
-	for _, c := range event.PrivateChannels {
-		s.chanCreate(ds, &discordgo.ChannelCreate{c})
+	for _, pms := range event.PrivateChannels {
+		cc := &discordgo.ChannelCreate{pms}
+		cc.Type = discordgo.ChannelTypeDM
+		if pms.Name == "" {
+			// Not a group channel
+			pms.Name = pms.Recipients[0].Username
+		}
+		s.chanCreate(ds, cc)
 	}
 	sysname := fmt.Sprintf("Discordfs on %s", runtime.GOOS)
 	ds.UpdateStatus(0, sysname)
@@ -71,7 +77,7 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 		}
 		name = fmt.Sprintf("%s-%s", g.Name, event.Name)
 	case discordgo.ChannelTypeDM:
-		name = fmt.Sprintf("%s", event.Recipients[0].Username)
+		name = event.Name
 	case discordgo.ChannelTypeGroupDM:
 		// For now, grab the last message and get the channel name from that
 		m, err := ds.State.Message(event.LastMessageID, event.ID)
@@ -82,18 +88,9 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 		c, _ := ds.State.Channel(m.ChannelID)
 		name = fmt.Sprintf("%s", c.Name)
 	case discordgo.ChannelTypeGuildVoice:
-		name = fmt.Sprintf("%s-%s-voice")
-	}
-	g, err := ds.State.Guild(event.GuildID)
-	if err != nil {
-		log.Println(err)
 		return
 	}
-	name = fmt.Sprintf("%s-%s", g.Name, event.Name)
-	if s.c.HasBuffer(name, "feed") {
-		return
-	}
-	err = s.c.CreateBuffer(name, "feed")
+	err := s.c.CreateBuffer(name, "feed")
 	if err != nil {		
 		return
 	}

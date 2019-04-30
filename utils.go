@@ -4,6 +4,8 @@ import (
 	"errors"
 	"path"
 	"strings"
+
+	"github.com/bwmarrin/discordgo"
 )
 
 // Returns the chan ID and guild ID or an error
@@ -23,12 +25,21 @@ func getChanID(s *server, bufname string) (string, error) {
 		}
 		
 	}
+	// Group
 	uc, _ := s.dg.UserChannels()
 	for _, c := range uc {
-		if c.Name != name {
-			continue
+		switch c.Type {
+		case discordgo.ChannelTypeDM:
+			for _, user := range c.Recipients {
+				if user.Username == name {
+					return c.ID, nil
+				}
+			}
+		case discordgo.ChannelTypeGroupDM:
+			if c.Name == name {
+				return c.ID, nil
+			}
 		}
-		return c.ID, nil
 	}
 	return "", errors.New("No such guild/channel")
 }
