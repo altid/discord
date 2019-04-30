@@ -114,14 +114,6 @@ func (s *server) chanDelete(ds *discordgo.Session, event *discordgo.ChannelDelet
 	s.c.DeleteBuffer(event.Name, "feed")
 }
 
-func (s *server) guildCreate(ds *discordgo.Session, event *discordgo.GuildCreate) {
-	// This doesn't do what we want at all
-}
-
-func (s *server) guildDelete(ds *discordgo.Session, event *discordgo.GuildDelete) {
-	//
-}
-
 func (s *server) guildUpdate(ds *discordgo.Session, event *discordgo.GuildUpdate) {
 	// Guild changed - log to named server
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"path"
 	"strings"
 )
@@ -10,7 +9,6 @@ import (
 // Returns the chan ID and guild ID or an error
 func getChanID(s *server, bufname string) (string, error) {
 	name := path.Base(bufname)
-	log.Println(name)
 	for _, g := range s.guilds {
 		if ! strings.HasPrefix(name, g.Name) {
 			continue

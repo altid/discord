@@ -38,7 +38,6 @@ func main() {
 	dg.AddHandler(s.chanCreate)
 	dg.AddHandler(s.chanUpdate)
 	dg.AddHandler(s.chanDelete)
-	dg.AddHandler(s.guildCreate) 
 	dg.AddHandler(s.guildUpdate)
 	dg.AddHandler(s.guildMemNew)
 	dg.AddHandler(s.guildMemBye)
