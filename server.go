@@ -39,7 +39,9 @@ func (s *server) Link(c *fslib.Control, from, name string) error {
 }
 
 func (s *server) Default(c *fslib.Control, cmd, from, m string) error {
-	// Nick + Edit + Create(guild/channel)
+	// TODO(halfwit) nick + edit + create(guild/channel) + msg + me
+	// Create PM session
+	// Send PM through Handle
 	return fmt.Errorf("Unknown command %s", cmd)
 }
 

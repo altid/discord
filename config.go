@@ -51,17 +51,24 @@ func readRecord(rec ndb.Record) (*config, error) {
 		switch tup.Attr {
 		case "log":
 			conf.log = path.Join(tup.Val, *srv)
+		case "auth":
+			conf.pass = tup.Val
 		case "user":
 			conf.user = tup.Val
 		}
 	}
-	userPwd, err := libauth.Getuserpasswd(
-		"proto=pass service=discord server=discordapp.com user=%s",
-		conf.user,
-	)
-	if err != nil {
-		return nil, err
+	if len(conf.pass) > 5 && conf.pass[:5] == "pass=" {
+		conf.pass = conf.pass[5:]
 	}
-	conf.pass = userPwd.Password
+	if conf.pass == "factotum" {
+		userPwd, err := libauth.Getuserpasswd(
+			"proto=pass service=discord server=discordapp.com user=%s",
+			conf.user,
+		)
+		if err != nil {
+			return nil, err
+		}
+		conf.pass = userPwd.Password
+	}
 	return conf, nil
 }
