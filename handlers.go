@@ -13,20 +13,6 @@ import (
 
 func (s *server) ready(ds *discordgo.Session, event *discordgo.Ready) {
 	s.guilds = event.Guilds
-	for _, g := range event.Guilds {
-		for _, c := range g.Channels {
-			s.chanCreate(ds, &discordgo.ChannelCreate{c})
-		}
-	}
-	for _, pms := range event.PrivateChannels {
-		cc := &discordgo.ChannelCreate{pms}
-		cc.Type = discordgo.ChannelTypeDM
-		if pms.Name == "" {
-			// Not a group channel
-			pms.Name = pms.Recipients[0].Username
-		}
-		s.chanCreate(ds, cc)
-	}
 	sysname := fmt.Sprintf("Discordfs on %s", runtime.GOOS)
 	ds.UpdateStatus(0, sysname)
 }
@@ -64,6 +50,13 @@ func (s *server) msgDelete(ds *discordgo.Session, event *discordgo.MessageDelete
 
 func (s *server) chanPins(ds *discordgo.Session, event *discordgo.ChannelPinsUpdate) {
 	// Pins, eventually
+}
+
+// Use our config to flag out if we care about these events
+// This event has a _lot_ of useful parts, and will be much cleaner to target than
+// The original way of iterating channels + such
+func (s *server) guildCreate(ds *discordgo.Session, event *discordgo.GuildCreate) {
+
 }
 
 func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreate) {
@@ -104,10 +97,14 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 }
 
 func (s *server) chanUpdate(ds *discordgo.Session, event *discordgo.ChannelUpdate) {
-	// Append to channel
+	// 
 }
 
 func (s *server) chanDelete(ds *discordgo.Session, event *discordgo.ChannelDelete) {
+	s.c.DeleteBuffer(event.Name, "feed")
+}
+
+func (s *server) guildDelete(ds *discordgo.Session, event *discordgo.GuildDelete) {
 	s.c.DeleteBuffer(event.Name, "feed")
 }
 

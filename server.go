@@ -18,6 +18,9 @@ type server struct {
 	guilds []*discordgo.Guild
 }
 
+// TODO: Open and Close both need to also handle PMs
+// An Open call on a hidden (from the discordfs directory) should just do a create
+// if we're already connected to a given channel
 func (s *server) Open(c *fslib.Control, name string) error {
 	g, err := s.dg.State.Guild(name)
 	if err != nil {
