@@ -6,22 +6,22 @@ import (
 	"strings"
 
 	cm "github.com/altid/cleanmark"
-	"github.com/altid/fslib"
+	"github.com/altid/libs/fs"
 	"github.com/bwmarrin/discordgo"
 )
 
 var workdir = path.Join(*mtpt, *srv)
 
 type server struct {
-	c *fslib.Control
-	dg *discordgo.Session
+	c      *fs.Control
+	dg     *discordgo.Session
 	guilds []*discordgo.Guild
 }
 
 // TODO: Open and Close both need to also handle PMs
 // An Open call on a hidden (from the discordfs directory) should just do a create
 // if we're already connected to a given channel
-func (s *server) Open(c *fslib.Control, name string) error {
+func (s *server) Open(c *fs.Control, name string) error {
 	g, err := s.dg.State.Guild(name)
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func (s *server) Open(c *fslib.Control, name string) error {
 	return s.dg.State.GuildAdd(g)
 }
 
-func (s *server) Close(c *fslib.Control, name string) error {
+func (s *server) Close(c *fs.Control, name string) error {
 	g, err := s.dg.State.Guild(name)
 	if err != nil {
 		return err
@@ -37,11 +37,11 @@ func (s *server) Close(c *fslib.Control, name string) error {
 	return s.dg.State.GuildRemove(g)
 }
 
-func (s *server) Link(c *fslib.Control, from, name string) error {
+func (s *server) Link(c *fs.Control, from, name string) error {
 	return fmt.Errorf("link command not supported, please use open/close\n")
 }
 
-func (s *server) Default(c *fslib.Control, cmd, from, m string) error {
+func (s *server) Default(c *fs.Control, cmd, from, m string) error {
 	// TODO(halfwit) nick + edit + create(guild/channel) + msg + me
 	// Create PM session
 	// Send PM through Handle

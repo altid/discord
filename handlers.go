@@ -7,7 +7,7 @@ import (
 	"runtime"
 
 	"github.com/altid/cleanmark"
-	"github.com/altid/fslib"
+	"github.com/altid/libs/fs"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -27,7 +27,7 @@ func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate
 	if err == nil {
 		name = fmt.Sprintf("%s-%s", g.Name, c.Name)
 	}
-	if ! s.c.HasBuffer(name, "feed") {
+	if !s.c.HasBuffer(name, "feed") {
 		s.chanCreate(ds, &discordgo.ChannelCreate{c})
 	}
 	w := s.c.MainWriter(name, "feed")
@@ -84,10 +84,10 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 		return
 	}
 	err := s.c.CreateBuffer(name, "feed")
-	if err != nil {		
+	if err != nil {
 		return
 	}
-	input, err := fslib.NewInput(s, workdir, name)
+	input, err := fs.NewInput(s, workdir, name)
 	if err != nil {
 		log.Println(err)
 		return
@@ -97,7 +97,7 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 }
 
 func (s *server) chanUpdate(ds *discordgo.Session, event *discordgo.ChannelUpdate) {
-	// 
+	//
 }
 
 func (s *server) chanDelete(ds *discordgo.Session, event *discordgo.ChannelDelete) {

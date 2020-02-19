@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/altid/fslib"
+	"github.com/altid/libs/fs"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -43,12 +43,12 @@ func main() {
 	dg.AddHandler(s.guildMemBye)
 	dg.AddHandler(s.guildMemUpd)
 	dg.AddHandler(s.userUpdate)
-	ctrl, err := fslib.CreateCtrlFile(s, config.log, *mtpt, *srv, "feed")
+	ctrl, err := fs.CreateCtrlFile(s, config.log, *mtpt, *srv, "feed")
 	defer ctrl.Cleanup()
 	if err != nil {
 		log.Fatal(err)
 	}
-	s.c  = ctrl
+	s.c = ctrl
 	s.dg = dg
 	ctrl.CreateBuffer("server", "feed")
 	err = dg.Open()
