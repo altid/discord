@@ -5,8 +5,8 @@ import (
 	"path"
 	"strings"
 
-	cm "github.com/altid/cleanmark"
 	"github.com/altid/libs/fs"
+	"github.com/altid/libs/markup"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -49,24 +49,24 @@ func (s *server) Default(c *fs.Control, cmd, from, m string) error {
 }
 
 // input is always sent down raw to the server
-func (s *server) Handle(bufname string, l *cm.Lexer) error {
+func (s *server) Handle(bufname string, l *markup.Lexer) error {
 	var m strings.Builder
 	for {
 		i := l.Next()
 		switch i.ItemType {
-		case cm.EOF:
+		case markup.EOF:
 			cid, err := getChanID(s, bufname)
 			if err != nil {
 				return err
 			}
 			_, err = s.dg.ChannelMessageSend(cid, m.String())
 			return err
-		case cm.ErrorText:
-		case cm.UrlLink, cm.UrlText, cm.ImagePath, cm.ImageLink, cm.ImageText:
-		case cm.ColorText, cm.ColorTextBold:
-		case cm.BoldText:
-		case cm.EmphasisText:
-		case cm.UnderlineText:
+		case markup.ErrorText:
+		case markup.UrlLink, markup.UrlText, markup.ImagePath, markup.ImageLink, markup.ImageText:
+		case markup.ColorText, markup.ColorTextBold:
+		case markup.BoldText:
+		case markup.EmphasisText:
+		case markup.UnderlineText:
 		default:
 			m.Write(i.Data)
 		}

@@ -6,8 +6,8 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/altid/cleanmark"
 	"github.com/altid/libs/fs"
+	"github.com/altid/libs/markup"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -35,7 +35,7 @@ func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate
 		log.Printf("Unable to create feed entry for %s\n", name)
 		return
 	}
-	feed := cleanmark.NewCleaner(w)
+	feed := markup.NewCleaner(w)
 	defer feed.Close()
 	feed.WritefEscaped("%s: %s\n", event.Author.Username, event.Content)
 }
