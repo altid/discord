@@ -43,7 +43,7 @@ func main() {
 	dg.AddHandler(s.guildMemBye)
 	dg.AddHandler(s.guildMemUpd)
 	dg.AddHandler(s.userUpdate)
-	ctrl, err := fs.CreateCtrlFile(s, config.log, *mtpt, *srv, "feed")
+	ctrl, err := fs.CreateCtlFile(s, config.log, *mtpt, *srv, "feed")
 	defer ctrl.Cleanup()
 	if err != nil {
 		log.Fatal(err)
