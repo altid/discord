@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"path"
 	"runtime"
 
@@ -17,9 +16,10 @@ func (s *server) ready(ds *discordgo.Session, event *discordgo.Ready) {
 	ds.UpdateStatus(0, sysname)
 }
 func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate) {
+
 	c, err := ds.State.Channel(event.ChannelID)
 	if err != nil {
-		log.Print(err)
+		errorWrite(s.c, err)
 		return
 	}
 	name := c.Name
@@ -30,9 +30,9 @@ func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate
 	if !s.c.HasBuffer(name, "feed") {
 		s.chanCreate(ds, &discordgo.ChannelCreate{c})
 	}
-	w := s.c.MainWriter(name, "feed")
-	if w == nil {
-		log.Printf("Unable to create feed entry for %s\n", name)
+	w, err := s.c.MainWriter(name, "feed")
+	if err != nil {
+		errorWrite(s.c, err)
 		return
 	}
 	feed := markup.NewCleaner(w)
@@ -65,7 +65,7 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 	case discordgo.ChannelTypeGuildText:
 		g, err := ds.State.Guild(event.GuildID)
 		if err != nil {
-			log.Println(err)
+			errorWrite(s.c, err)
 			return
 		}
 		name = fmt.Sprintf("%s-%s", g.Name, event.Name)
@@ -75,7 +75,7 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 		// For now, grab the last message and get the channel name from that
 		m, err := ds.State.Message(event.LastMessageID, event.ID)
 		if err != nil {
-			log.Println(err)
+			errorWrite(s.c, err)
 			return
 		}
 		c, _ := ds.State.Channel(m.ChannelID)
@@ -85,11 +85,12 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 	}
 	err := s.c.CreateBuffer(name, "feed")
 	if err != nil {
+		errorWrite(s.c, err)
 		return
 	}
 	input, err := fs.NewInput(s, workdir, name)
 	if err != nil {
-		log.Println(err)
+		errorWrite(s.c, err)
 		return
 	}
 	defer s.c.Event(path.Join(workdir, name, "input"))
