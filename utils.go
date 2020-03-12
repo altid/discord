@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"path"
 	"strings"
 
@@ -48,12 +47,8 @@ func getChanID(s *server, bufname string) (string, error) {
 }
 
 func errorWrite(c *fs.Control, err error) {
-	ew, err := c.ErrorWriter()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	ew, _ := c.ErrorWriter()
 	defer ew.Close()
 
-	fmt.Fprintf(ew, "discordfs: %s\n", err)
+	fmt.Fprintf(ew, "discordfs: %v\n", err)
 }

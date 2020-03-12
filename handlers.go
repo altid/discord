@@ -15,28 +15,34 @@ func (s *server) ready(ds *discordgo.Session, event *discordgo.Ready) {
 	sysname := fmt.Sprintf("Discordfs on %s", runtime.GOOS)
 	ds.UpdateStatus(0, sysname)
 }
-func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate) {
 
+func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate) {
 	c, err := ds.State.Channel(event.ChannelID)
 	if err != nil {
 		errorWrite(s.c, err)
 		return
 	}
+
 	name := c.Name
+
 	g, err := ds.State.Guild(event.GuildID)
 	if err == nil {
 		name = fmt.Sprintf("%s-%s", g.Name, c.Name)
 	}
+
 	if !s.c.HasBuffer(name, "feed") {
 		s.chanCreate(ds, &discordgo.ChannelCreate{c})
 	}
+
 	w, err := s.c.MainWriter(name, "feed")
 	if err != nil {
 		errorWrite(s.c, err)
 		return
 	}
+
 	feed := markup.NewCleaner(w)
 	defer feed.Close()
+	
 	feed.WritefEscaped("%s: %s\n", event.Author.Username, event.Content)
 }
 
@@ -83,16 +89,18 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 	case discordgo.ChannelTypeGuildVoice:
 		return
 	}
-	err := s.c.CreateBuffer(name, "feed")
-	if err != nil {
-		errorWrite(s.c, err)
+
+	if e := s.c.CreateBuffer(name, "feed"); e != nil {
+		errorWrite(s.c, e)
 		return
 	}
+
 	input, err := fs.NewInput(s, workdir, name)
 	if err != nil {
 		errorWrite(s.c, err)
 		return
 	}
+
 	defer s.c.Event(path.Join(workdir, name, "input"))
 	go input.Start()
 }

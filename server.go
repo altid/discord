@@ -26,6 +26,7 @@ func (s *server) Open(c *fs.Control, name string) error {
 	if err != nil {
 		return err
 	}
+
 	return s.dg.State.GuildAdd(g)
 }
 
@@ -34,6 +35,7 @@ func (s *server) Close(c *fs.Control, name string) error {
 	if err != nil {
 		return err
 	}
+
 	return s.dg.State.GuildRemove(g)
 }
 
@@ -59,6 +61,7 @@ func (s *server) Handle(bufname string, l *markup.Lexer) error {
 			if err != nil {
 				return err
 			}
+			
 			_, err = s.dg.ChannelMessageSend(cid, m.String())
 			return err
 		case markup.ErrorText:
@@ -71,5 +74,4 @@ func (s *server) Handle(bufname string, l *markup.Lexer) error {
 			m.Write(i.Data)
 		}
 	}
-	return fmt.Errorf("Unknown error parsing input encountered")
 }
