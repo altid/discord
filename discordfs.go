@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	mtpt = flag.String("p", "/tmp/altid", "Path for filesystem")
-	srv  = flag.String("s", "discord", "Name of service")
+	mtpt  = flag.String("p", "/tmp/altid", "Path for filesystem")
+	srv   = flag.String("s", "discord", "Name of service")
+	debug = flag.Bool("d", false, "enable debug logging")
 )
 
 func main() {
@@ -43,7 +44,7 @@ func main() {
 	dg.AddHandler(s.guildMemBye)
 	dg.AddHandler(s.guildMemUpd)
 	dg.AddHandler(s.userUpdate)
-	ctrl, err := fs.CreateCtlFile(s, config.log, *mtpt, *srv, "feed")
+	ctrl, err := fs.CreateCtlFile(s, config.log, *mtpt, *srv, "feed", *debug)
 	defer ctrl.Cleanup()
 	if err != nil {
 		log.Fatal(err)

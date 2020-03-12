@@ -42,7 +42,7 @@ func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate
 
 	feed := markup.NewCleaner(w)
 	defer feed.Close()
-	
+
 	feed.WritefEscaped("%s: %s\n", event.Author.Username, event.Content)
 }
 
@@ -95,7 +95,7 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 		return
 	}
 
-	input, err := fs.NewInput(s, workdir, name)
+	input, err := fs.NewInput(s, workdir, name, *debug)
 	if err != nil {
 		errorWrite(s.c, err)
 		return
