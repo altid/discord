@@ -29,7 +29,7 @@ func main() {
 	s := &server{}
 	dg, err := discordgo.New(config.user, config.pass)
 	if err != nil {
-		log.Fatal("Error initiating discord session %v", err)
+		log.Fatalf("Error initiating discord session %v", err)
 	}
 	dg.AddHandler(s.ready)
 	dg.AddHandler(s.msgCreate)
