@@ -40,7 +40,7 @@ func (s *server) Close(c *fs.Control, name string) error {
 }
 
 func (s *server) Link(c *fs.Control, from, name string) error {
-	return fmt.Errorf("link command not supported, please use open/close\n")
+	return fmt.Errorf("link command not supported, please use open/close")
 }
 
 func (s *server) Default(c *fs.Control, cmd, from, m string) error {

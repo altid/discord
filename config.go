@@ -32,11 +32,11 @@ func newConfig() (*config, error) {
 	recs := conf.Search("service", *srv)
 	switch len(recs) {
 	case 0:
-		return nil, fmt.Errorf("Unable to find entry for %s\n", *srv)
+		return nil, fmt.Errorf("unable to find entry for %s", *srv)
 	case 1:
 		return readRecord(recs[0])
 	}
-	return nil, fmt.Errorf("Found multiple entries for %s, unable to continue\n", *srv)
+	return nil, fmt.Errorf("ound multiple entries for %s, unable to continue", *srv)
 }
 
 func readRecord(rec ndb.Record) (*config, error) {
