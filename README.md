@@ -1,6 +1,8 @@
 # Discordfs
 
-discordfs is a file service, which presents a simple view of a Discord session.
+discordfs is an altid service allowing a user to connect to a discord network
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/altid/discordfs)](https://goreportcard.com/report/github.com/altid/discordfs)
 
 `go get github.com/altid/discordfs`
 
