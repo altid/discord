@@ -61,7 +61,7 @@ func (s *server) Handle(bufname string, l *markup.Lexer) error {
 			if err != nil {
 				return err
 			}
-			
+
 			_, err = s.dg.ChannelMessageSend(cid, m.String())
 			return err
 		case markup.ErrorText:
