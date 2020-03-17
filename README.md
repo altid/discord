@@ -2,7 +2,7 @@
 
 discordfs is an altid service allowing a user to connect to a discord network
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/altid/discordfs)](https://goreportcard.com/report/github.com/altid/discordfs)
+[![Go Report Card](https://goreportcard.com/badge/github.com/altid/discordfs)](https://goreportcard.com/report/github.com/altid/discordfs) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 
 `go get github.com/altid/discordfs`
 
