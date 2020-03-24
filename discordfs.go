@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
 
+	"github.com/altid/libs/config"
 	"github.com/altid/libs/fs"
 	"github.com/bwmarrin/discordgo"
 )
@@ -13,6 +15,7 @@ var (
 	mtpt  = flag.String("p", "/tmp/altid", "Path for filesystem")
 	srv   = flag.String("s", "discord", "Name of service")
 	debug = flag.Bool("d", false, "enable debug logging")
+	setup = flag.Bool("conf", false, "Set up config file")
 )
 
 func main() {
@@ -22,15 +25,32 @@ func main() {
 		os.Exit(1)
 	}
 
-	config, err := newConfig()
-	if err != nil {
-		log.Fatal(err)
+	conf := &struct {
+		Address       string `Address of service`
+		Auth          config.Auth
+		User          string
+		Logdir        config.Logdir
+		ListedAddress config.ListenAddress
+	}{"discordapp.com", "password", "Guest", "none", ""}
+
+	if *setup {
+		if e := config.Create(conf, *srv, "", *debug); e != nil {
+			log.Fatal(e)
+		}
 	}
-	s := &server{}
-	dg, err := discordgo.New(config.user, config.pass)
+
+	if e := config.Marshal(conf, *srv, "", *debug); e != nil {
+		log.Fatal(e)
+	}
+
+	dg, err := discordgo.New(conf.User, string(conf.Auth))
 	if err != nil {
 		log.Fatalf("Error initiating discord session %v", err)
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+
+	s := &server{cancel: cancel}
 	dg.AddHandler(s.ready)
 	dg.AddHandler(s.msgCreate)
 	dg.AddHandler(s.msgUpdate)
@@ -44,18 +64,25 @@ func main() {
 	dg.AddHandler(s.guildMemBye)
 	dg.AddHandler(s.guildMemUpd)
 	dg.AddHandler(s.userUpdate)
-	ctrl, err := fs.CreateCtlFile(s, config.log, *mtpt, *srv, "feed", *debug)
-	defer ctrl.Cleanup()
+
+	ctrl, err := fs.CreateCtlFile(ctx, s, string(conf.Logdir), *mtpt, *srv, "feed", *debug)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	defer ctrl.Cleanup()
+
 	s.c = ctrl
 	s.dg = dg
+
+	ctrl.SetCommands(cmds...)
 	ctrl.CreateBuffer("server", "feed")
+
 	err = dg.Open()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer dg.Close()
 	ctrl.Listen()
 }

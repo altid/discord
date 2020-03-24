@@ -1,9 +1,7 @@
 9fans.net/go v0.0.2 h1:RYM6lWITV8oADrwLfdzxmt8ucfW6UtP9v1jg4qAbqts=
 9fans.net/go v0.0.2/go.mod h1:lfPdxjq9v8pVQXUMBCx5EO5oLXWQFlKRQgs1kEkjoIM=
-bitbucket.org/mischief/libauth v0.0.0-20180917063427-eea7aee20a38 h1:UQkBplKkYbmXVI3uXbSuEeWQhwe6iri1qNOHV7g3eSg=
-bitbucket.org/mischief/libauth v0.0.0-20180917063427-eea7aee20a38/go.mod h1:3xI+y8DcaNvBpBDXfN1UyhUONW++xFj4jsYTQKES3Ak=
-github.com/altid/libs v0.0.0-20200314043833-77431354dd9c h1:sHscjbH+s6LtadPbZn3k2zDwXSI11o4iJwIkNW86a7E=
-github.com/altid/libs v0.0.0-20200314043833-77431354dd9c/go.mod h1:U8m8LG+xPdt5M3MXW+opofIYFS3iA6RrP/fQhBaH9N8=
+github.com/altid/libs v0.0.3-alpha h1:H0VQ03wZVcExlknnZq0jpigwJ6hzo70xu7etDMFbZm0=
+github.com/altid/libs v0.0.3-alpha/go.mod h1:U8m8LG+xPdt5M3MXW+opofIYFS3iA6RrP/fQhBaH9N8=
 github.com/bwmarrin/discordgo v0.20.2 h1:nA7jiTtqUA9lT93WL2jPjUp8ZTEInRujBdx1C9gkr20=
 github.com/bwmarrin/discordgo v0.20.2/go.mod h1:O9S4p+ofTFwB02em7jkpkV8M3R0/PUVOwN61zSZ0r4Q=
 github.com/google/gofuzz v1.1.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
