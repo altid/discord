@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/altid/libs/config"
+	"github.com/altid/libs/config/types"
 	"github.com/altid/libs/fs"
 	"github.com/bwmarrin/discordgo"
 )
@@ -26,17 +27,19 @@ func main() {
 	}
 
 	conf := &struct {
-		Address       string `Address of service`
-		Auth          config.Auth
-		User          string
-		Logdir        config.Logdir
-		ListedAddress config.ListenAddress
-	}{"discordapp.com", "password", "Guest", "none", ""}
+		Address string `Address of service`
+		Auth    types.Auth
+		User    string
+		Logdir  types.Logdir
+		Listen  types.ListenAddress
+	}{"discordapp.com", "password", "Guest", "none", "none"}
 
 	if *setup {
 		if e := config.Create(conf, *srv, "", *debug); e != nil {
 			log.Fatal(e)
 		}
+
+		os.Exit(0)
 	}
 
 	if e := config.Marshal(conf, *srv, "", *debug); e != nil {
