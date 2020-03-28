@@ -16,6 +16,12 @@ discordfs is an altid service allowing a user to connect to a discord network
 
 ## Configuration
 
+### With -conf
+
+[![asciicast](https://asciinema.org/a/68P7qa0h8ZpWIUXOIalrNwOpz.svg)](https://asciinema.org/a/68P7qa0h8ZpWIUXOIalrNwOpz)
+
+### Manually
+
 ```ndb
 # altid/config - Place this in your operating systems' default configuration directory
 

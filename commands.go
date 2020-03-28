@@ -2,7 +2,7 @@ package main
 
 import "github.com/altid/libs/fs"
 
-var cmds = []*fs.Command{
+var Commands = []*fs.Command{
 	&fs.Command{
 		Name:        "action",
 		Alias:       []string{"me", "act"},
@@ -35,14 +35,8 @@ var cmds = []*fs.Command{
 	&fs.Command{
 		Name:    "msg",
 		Heading: fs.DefaultGroup,
+		Description: "Send a message to user",
 		Args:    []string{"<name>", "<msg>"},
 		Alias:   []string{"query", "m", "q"},
 	},
-}
-
-func runCommand(s *server, cmd *fs.Command) error {
-	switch cmd.Name {
-		
-	}
-	return nil
 }

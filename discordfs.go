@@ -27,12 +27,12 @@ func main() {
 	}
 
 	conf := &struct {
-		Address string `Address of service`
+		Address string
 		Auth    types.Auth
-		User    string
+		User    string `Discord login (email address)`
 		Logdir  types.Logdir
 		Listen  types.ListenAddress
-	}{"discordapp.com", "password", "Guest", "none", "none"}
+	}{"discordapp.com", "password", "", "none", "none"}
 
 	if *setup {
 		if e := config.Create(conf, *srv, "", *debug); e != nil {
@@ -78,7 +78,7 @@ func main() {
 	s.c = ctrl
 	s.dg = dg
 
-	ctrl.SetCommands(cmds...)
+	ctrl.SetCommands(Commands...)
 	ctrl.CreateBuffer("server", "feed")
 
 	err = dg.Open()

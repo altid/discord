@@ -27,7 +27,7 @@ func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate
 
 	g, err := ds.State.Guild(event.GuildID)
 	if err == nil {
-		name = fmt.Sprintf("%s-%s", g.Name, c.Name)
+		name = path.Join(g.Name, c.Name)
 	}
 
 	if !s.c.HasBuffer(name, "feed") {
@@ -43,7 +43,8 @@ func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate
 	feed := markup.NewCleaner(w)
 	defer feed.Close()
 
-	feed.WritefEscaped("%s: %s\n", event.Author.Username, event.Content)
+	feed.WritefEscaped("%%[%s](blue): %s\n", event.Author.Username, event.Content)
+	s.c.Event(path.Join(*mtpt, *srv, g.Name, c.Name, "feed"))
 }
 
 func (s *server) msgUpdate(ds *discordgo.Session, event *discordgo.MessageUpdate) {
@@ -74,7 +75,7 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 			errorWrite(s.c, err)
 			return
 		}
-		name = fmt.Sprintf("%s-%s", g.Name, event.Name)
+		name = path.Join(g.Name, event.Name)
 	case discordgo.ChannelTypeDM:
 		name = event.Name
 	case discordgo.ChannelTypeGroupDM:
@@ -85,7 +86,7 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 			return
 		}
 		c, _ := ds.State.Channel(m.ChannelID)
-		name = fmt.Sprintf("%s", c.Name)
+		name = c.Name
 	case discordgo.ChannelTypeGuildVoice:
 		return
 	}

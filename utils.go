@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"path"
-	"strings"
 
 	"github.com/altid/libs/fs"
 	"github.com/bwmarrin/discordgo"
@@ -12,20 +11,22 @@ import (
 
 // Returns the chan ID and guild ID or an error
 func getChanID(s *server, bufname string) (string, error) {
-	name := path.Base(bufname)
 	for _, g := range s.guilds {
-		if !strings.HasPrefix(name, g.Name) {
+
+		// Same guild by path
+		if path.Dir(bufname) != g.Name {
 			continue
 		}
-		ch := strings.TrimPrefix(name, g.Name+"-")
+
+		ch := path.Base(bufname)
 		// make sure chan exists
 		for _, c := range g.Channels {
 			if c.Name != ch {
 				continue
 			}
+
 			return c.ID, nil
 		}
-
 	}
 	// Group
 	uc, _ := s.dg.UserChannels()
@@ -33,12 +34,12 @@ func getChanID(s *server, bufname string) (string, error) {
 		switch c.Type {
 		case discordgo.ChannelTypeDM:
 			for _, user := range c.Recipients {
-				if user.Username == name {
+				if user.Username == path.Base(bufname) {
 					return c.ID, nil
 				}
 			}
 		case discordgo.ChannelTypeGroupDM:
-			if c.Name == name {
+			if c.Name == path.Base(bufname) {
 				return c.ID, nil
 			}
 		}

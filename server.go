@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"path"
 	"strings"
 
@@ -20,41 +20,25 @@ type server struct {
 	guilds []*discordgo.Guild
 }
 
-func (s *server) Refresh(*fs.Control) error {
-	return nil
-}
+func (s *server) Run(c *fs.Control, cmd *fs.Command) error {
+	switch cmd.Name {
+	case "open":
+		g, err := s.dg.State.Guild(strings.Join(cmd.Args, " "))
+		if err != nil {
+			return err
+		}
 
-func (s *server) Restart(*fs.Control) error {
-	return nil
-}
+		return s.dg.State.GuildAdd(g)
+	case "close":
+		g, err := s.dg.State.Guild(strings.Join(cmd.Args, " "))
+		if err != nil {
+			return err
+		}
 
-// TODO: Open and Close both need to also handle PMs
-// An Open call on a hidden (from the discordfs directory) should just do a create
-// if we're already connected to a given channel
-func (s *server) Open(c *fs.Control, name string) error {
-	g, err := s.dg.State.Guild(name)
-	if err != nil {
-		return err
+		return s.dg.State.GuildRemove(g)
+	default:
+		return errors.New("command not supported")
 	}
-
-	return s.dg.State.GuildAdd(g)
-}
-
-func (s *server) Close(c *fs.Control, name string) error {
-	g, err := s.dg.State.Guild(name)
-	if err != nil {
-		return err
-	}
-
-	return s.dg.State.GuildRemove(g)
-}
-
-func (s *server) Link(c *fs.Control, from, name string) error {
-	return fmt.Errorf("link command not supported, please use open/close")
-}
-
-func (s *server) Default(c *fs.Control, cmd *fs.Command) error {
-	return runCommand(s, cmd)
 }
 
 func (s *server) Quit() {
