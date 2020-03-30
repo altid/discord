@@ -31,16 +31,22 @@ func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate
 			s.chanCreate(ds, &discordgo.ChannelCreate{c})
 		}
 	} else if ch, err := ds.State.Channel(event.ChannelID); err == nil {
-		for _, user := range ch.Recipients {
-			if user.ID != ds.State.SessionID {
-				name = user.String()
+		switch ch.Type {
+		case discordgo.ChannelTypeDM:
+			for _, user := range ch.Recipients {
 
-				if !s.c.HasBuffer(name, "feed") {
-					s.c.CreateBuffer(name, "feed")
-					s.c.Input(name)
+				if user.ID != ds.State.SessionID {
+					name = user.String()
+
+					if !s.c.HasBuffer(name, "feed") {
+						s.c.CreateBuffer(name, "feed")
+						s.c.Input(name)
+					}
+					break
 				}
-				break
 			}
+		case discordgo.ChannelTypeGroupDM:
+			name = ch.Name
 		}
 	} else {
 		// fall back to server

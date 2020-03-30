@@ -88,17 +88,24 @@ func msgID(dg *discordgo.Session, bufname string) (string, error) {
 		}
 	}
 
-	// This breaks for multiple recipients
 	for _, pm := range dg.State.PrivateChannels {
-		for _, id := range pm.Recipients {
-			if id.ID == dg.State.SessionID {
-				continue
-			}
+		switch pm.Type {
+		case discordgo.ChannelTypeDM:
+			for _, id := range pm.Recipients {
+				if id.ID == dg.State.SessionID {
+					continue
+				}
 
-			if id.String() == bufname {
+				if id.String() == bufname {
+					return pm.ID, nil
+				}
+			}
+		case discordgo.ChannelTypeGroupDM:
+			if pm.Name == bufname {
 				return pm.ID, nil
 			}
 		}
+
 	}
 
 	return "", fmt.Errorf("couldn't find channel for %s", bufname)
