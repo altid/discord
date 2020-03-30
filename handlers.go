@@ -5,7 +5,6 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/altid/libs/fs"
 	"github.com/altid/libs/markup"
 	"github.com/bwmarrin/discordgo"
 )
@@ -23,15 +22,29 @@ func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate
 		return
 	}
 
-	name := c.Name
+	var name string
 
-	g, err := ds.State.Guild(event.GuildID)
-	if err == nil {
+	// Either getting guild or channel by ID will fail
+	if g, err := ds.State.Guild(event.GuildID); err == nil {
 		name = path.Join(g.Name, c.Name)
-	}
+		if !s.c.HasBuffer(name, "feed") {
+			s.chanCreate(ds, &discordgo.ChannelCreate{c})
+		}
+	} else if ch, err := ds.State.Channel(event.ChannelID); err == nil {
+		for _, user := range ch.Recipients {
+			if user.ID != ds.State.SessionID {
+				name = user.String()
 
-	if !s.c.HasBuffer(name, "feed") {
-		s.chanCreate(ds, &discordgo.ChannelCreate{c})
+				if !s.c.HasBuffer(name, "feed") {
+					s.c.CreateBuffer(name, "feed")
+					s.c.Input(name)
+				}
+				break
+			}
+		}
+	} else {
+		// fall back to server
+		name = "server"
 	}
 
 	w, err := s.c.MainWriter(name, "feed")
@@ -43,8 +56,8 @@ func (s *server) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate
 	feed := markup.NewCleaner(w)
 	defer feed.Close()
 
-	feed.WritefEscaped("%%[%s](blue): %s\n", event.Author.Username, event.Content)
-	s.c.Event(path.Join(*mtpt, *srv, g.Name, c.Name, "feed"))
+	feed.WritefEscaped("%%[%s](blue): %s\n", event.Author.Username, event.ContentWithMentionsReplaced())
+	s.c.Event(path.Join(*mtpt, *srv, name, "feed"))
 }
 
 func (s *server) msgUpdate(ds *discordgo.Session, event *discordgo.MessageUpdate) {
@@ -76,17 +89,8 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 			return
 		}
 		name = path.Join(g.Name, event.Name)
-	case discordgo.ChannelTypeDM:
-		name = event.Name
-	case discordgo.ChannelTypeGroupDM:
-		// For now, grab the last message and get the channel name from that
-		m, err := ds.State.Message(event.LastMessageID, event.ID)
-		if err != nil {
-			errorWrite(s.c, err)
-			return
-		}
-		c, _ := ds.State.Channel(m.ChannelID)
-		name = c.Name
+	case discordgo.ChannelTypeDM, discordgo.ChannelTypeGroupDM:
+		name = event.Channel.Name
 	case discordgo.ChannelTypeGuildVoice:
 		return
 	}
@@ -96,14 +100,11 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 		return
 	}
 
-	input, err := fs.NewInput(s, workdir, name, *debug)
-	if err != nil {
-		errorWrite(s.c, err)
-		return
-	}
-
 	defer s.c.Event(path.Join(workdir, name, "input"))
-	go input.Start()
+
+	if e := s.c.Input(name); e != nil {
+		errorWrite(s.c, e)
+	}
 }
 
 func (s *server) chanUpdate(ds *discordgo.Session, event *discordgo.ChannelUpdate) {

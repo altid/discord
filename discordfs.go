@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"log"
 	"os"
@@ -51,9 +50,7 @@ func main() {
 		log.Fatalf("Error initiating discord session %v", err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-
-	s := &server{cancel: cancel}
+	s := &server{}
 	dg.AddHandler(s.ready)
 	dg.AddHandler(s.msgCreate)
 	dg.AddHandler(s.msgUpdate)
@@ -68,7 +65,7 @@ func main() {
 	dg.AddHandler(s.guildMemUpd)
 	dg.AddHandler(s.userUpdate)
 
-	ctrl, err := fs.CreateCtlFile(ctx, s, string(conf.Logdir), *mtpt, *srv, "feed", *debug)
+	ctrl, err := fs.New(s, string(conf.Logdir), *mtpt, *srv, "feed", *debug)
 	if err != nil {
 		log.Fatal(err)
 	}
