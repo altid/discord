@@ -5,7 +5,6 @@ import (
 	"path"
 	"runtime"
 
-	"github.com/altid/libs/fs"
 	"github.com/altid/libs/markup"
 	"github.com/bwmarrin/discordgo"
 )
@@ -96,14 +95,7 @@ func (s *server) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCreat
 		return
 	}
 
-	input, err := fs.NewInput(s, workdir, name, *debug)
-	if err != nil {
-		errorWrite(s.c, err)
-		return
-	}
-
-	defer s.c.Event(path.Join(workdir, name, "input"))
-	go input.Start()
+	s.c.Input(name)
 }
 
 func (s *server) chanUpdate(ds *discordgo.Session, event *discordgo.ChannelUpdate) {

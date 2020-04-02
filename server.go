@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"path"
 	"strings"
@@ -14,7 +13,6 @@ import (
 var workdir = path.Join(*mtpt, *srv)
 
 type server struct {
-	cancel context.CancelFunc
 	c      *fs.Control
 	dg     *discordgo.Session
 	guilds []*discordgo.Guild
@@ -61,10 +59,10 @@ func (s *server) Handle(bufname string, l *markup.Lexer) error {
 		// TODO(halfwit) We want to allow markup as well
 		case markup.ErrorText:
 		case markup.URLLink, markup.URLText, markup.ImagePath, markup.ImageLink, markup.ImageText:
-		case markup.ColorText, markup.ColorTextBold:
+		case markup.ColorText, markup.ColorTextBold, markup.ColorTextStrong:
 		case markup.BoldText:
 		case markup.EmphasisText:
-		case markup.UnderlineText:
+		case markup.StrongText:
 		default:
 			m.Write(i.Data)
 		}
