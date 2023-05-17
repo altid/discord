@@ -25,7 +25,9 @@ func (s *Session) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreat
 	}
 
 	s.debug(ctlSucceed, "msg Callback")
+	// TODO: We could look for this in the recipients
 	name := c.Name
+
 	g, err := ds.State.Guild(event.GuildID)
 	if err == nil {
 		name = fmt.Sprintf("%s-%s", g.Name, c.Name)
@@ -77,16 +79,9 @@ func (s *Session) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCrea
 			return
 		}
 		name = fmt.Sprintf("%s-%s", g.Name, event.Name)
-	case discordgo.ChannelTypeDM:
-		name = event.Name
-	case discordgo.ChannelTypeGroupDM:
-		// For now, grab the last message and get the channel name from that
-		m, err := ds.State.Message(event.LastMessageID, event.ID)
-		if err != nil {
-			s.debug(ctlErr, err)
-			return
-		}
-		c, _ := ds.State.Channel(m.ChannelID)
+	case discordgo.ChannelTypeDM, discordgo.ChannelTypeGroupDM:
+		// Use the state just in case
+		c, _ := s.Client.State.Channel(event.Channel.ID)
 		name = c.Name
 	case discordgo.ChannelTypeGuildVoice:
 		return
@@ -95,11 +90,15 @@ func (s *Session) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCrea
 		s.debug(ctlErr, e)
 		return
 	}
+	if tw, err := s.ctrl.TitleWriter(name); err == nil {
+		fmt.Fprintf(tw, "%s\n", event.Channel.Topic)
+	}
+	
 	s.debug(ctlSucceed, "creating buffer", name)
 }
 
 func (s *Session) chanUpdate(ds *discordgo.Session, event *discordgo.ChannelUpdate) {
-	//
+	// We have members here, etc
 }
 
 func (s *Session) chanDelete(ds *discordgo.Session, event *discordgo.ChannelDelete) {
