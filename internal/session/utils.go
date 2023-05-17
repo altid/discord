@@ -1,36 +1,29 @@
-package main
+package session
 
 import (
 	"errors"
-	"fmt"
 	"path"
+	"strings"
 
-	"github.com/altid/libs/fs"
 	"github.com/bwmarrin/discordgo"
 )
 
 // Returns the chan ID and guild ID or an error
-func getChanID(s *server, bufname string) (string, error) {
-	for _, g := range s.guilds {
-
-		// Same guild by path
-		if path.Dir(bufname) != g.Name {
+func getChanID(s *Session, bufname string) (string, error) {
+	for _, g := range s.Client.State.Guilds {
+		if ! strings.HasPrefix(bufname, g.Name) {
 			continue
 		}
-
-		ch := path.Base(bufname)
+	
 		// make sure chan exists
 		for _, c := range g.Channels {
-			if c.Name != ch {
+			if ! strings.HasSuffix(bufname, c.Name) {
 				continue
 			}
-
 			return c.ID, nil
 		}
 	}
-	// Group
-	uc, _ := s.dg.UserChannels()
-	for _, c := range uc {
+	for _, c := range s.Client.State.PrivateChannels {
 		switch c.Type {
 		case discordgo.ChannelTypeDM:
 			for _, user := range c.Recipients {
@@ -44,12 +37,14 @@ func getChanID(s *server, bufname string) (string, error) {
 			}
 		}
 	}
-	return "", errors.New("No such guild/channel")
-}
 
-func errorWrite(c *fs.Control, err error) {
+	return "", errors.New("no such guild/channel")
+}
+/*
+func errorWrite(c *controller.Control, err error) {
 	ew, _ := c.ErrorWriter()
 	defer ew.Close()
 
 	fmt.Fprintf(ew, "discordfs: %v\n", err)
 }
+*/

@@ -1,88 +1,122 @@
-package main
+package discordfs
 
 import (
-	"flag"
-	"log"
-	"os"
+	"context"
 
+	"github.com/altid/discordfs/internal/commands"
+	"github.com/altid/discordfs/internal/session"
 	"github.com/altid/libs/config"
-	"github.com/altid/libs/config/types"
-	"github.com/altid/libs/fs"
-	"github.com/bwmarrin/discordgo"
+	"github.com/altid/libs/mdns"
+	"github.com/altid/libs/service"
+	"github.com/altid/libs/service/listener"
+	"github.com/altid/libs/store"
 )
 
-var (
-	mtpt  = flag.String("p", "/tmp/altid", "Path for filesystem")
-	srv   = flag.String("s", "discord", "Name of service")
-	debug = flag.Bool("d", false, "enable debug logging")
-	setup = flag.Bool("conf", false, "Set up config file")
-)
+type Discordfs struct {
+	run		func() error
+	session *session.Session
+	name	string
+	addr	string
+	debug	bool
+	mdns	*mdns.Entry
+	ctx		context.Context
+}
 
-func main() {
-	flag.Parse()
-	if flag.Lookup("h") != nil {
-		flag.Usage()
-		os.Exit(1)
+var defaults *session.Defaults = &session.Defaults{
+	Address:	"discordapp.com",
+	Auth:		"password",
+	SSL:		"",
+	User:		"",
+	Logdir:		"",
+	TLSCert:    "",
+	TLSKey:		"",
+}
+
+func CreateConfig(srv string, debug bool) error {
+	return config.Create(defaults, srv, "", debug)
+}
+
+func Register(ldir bool, addr, srv string, debug bool) (*Discordfs, error) {
+	if e := config.Marshal(defaults, srv, "", debug); e != nil {
+		return nil, e
 	}
-
-	conf := &struct {
-		Address string              `altid:"address,no_prompt"`
-		Auth    types.Auth          `altid:"auth,Authentication method to use"`
-		User    string              `altid:"user,prompt:Discord login (email address)"`
-		Logdir  types.Logdir        `altid:"logdir,no_prompt"`
-		Listen  types.ListenAddress `altid:"listen_address,no_prompt"`
-	}{"discordapp.com", "password", "", "", ""}
-
-	if *setup {
-		if e := config.Create(conf, *srv, "", *debug); e != nil {
-			log.Fatal(e)
-		}
-
-		os.Exit(0)
-	}
-
-	if e := config.Marshal(conf, *srv, "", *debug); e != nil {
-		log.Fatal(e)
-	}
-
-	dg, err := discordgo.New(conf.User, string(conf.Auth))
+	l, err := tolisten(defaults, addr, debug)
 	if err != nil {
-		log.Fatalf("Error initiating discord session %v", err)
+		return nil, err
+	}
+	s := tostore(defaults, ldir, debug)
+	session := &session.Session{
+		Defaults: defaults,
+		Verbose:  debug,
 	}
 
-	s := &server{}
-	dg.AddHandler(s.ready)
-	dg.AddHandler(s.msgCreate)
-	dg.AddHandler(s.msgUpdate)
-	dg.AddHandler(s.msgDelete)
-	dg.AddHandler(s.chanPins)
-	dg.AddHandler(s.chanCreate)
-	dg.AddHandler(s.chanUpdate)
-	dg.AddHandler(s.chanDelete)
-	dg.AddHandler(s.guildUpdate)
-	dg.AddHandler(s.guildMemNew)
-	dg.AddHandler(s.guildMemBye)
-	dg.AddHandler(s.guildMemUpd)
-	dg.AddHandler(s.userUpdate)
+	session.Parse()
+	ctx := context.Background()
 
-	ctrl, err := fs.New(s, string(conf.Logdir), *mtpt, *srv, "feed", *debug)
+	d := &Discordfs{
+		session:	session,
+		ctx:		ctx,
+		name:		srv,
+		addr:		addr,
+		debug:		debug,
+	}
+
+	c := service.New(srv, addr, debug)
+	c.WithListener(l)
+	c.WithStore(s)
+	c.WithContext(ctx)
+	c.WithCallbacks(session)
+	c.WithRunner(session)
+
+	c.SetCommands(commands.Commands)
+	d.run = c.Listen
+
+	return d, nil
+}
+
+func (discord *Discordfs) Run() error {
+	return discord.run()
+}
+
+func (discord *Discordfs) Broadcast() error {
+	entry, err := mdns.ParseURL(discord.addr, discord.name)
 	if err != nil {
-		log.Fatal(err)
+		return err
+	}
+	if e := mdns.Register(entry); e != nil {
+		return e
+	}
+	discord.mdns = entry
+	return nil
+}
+
+func (discord *Discordfs) Cleanup() {
+	if discord.mdns != nil {
+		discord.mdns.Cleanup()
+	}
+	discord.session.Quit()
+}
+
+func (discord *Discordfs) Session() *session.Session {
+	return discord.session
+}
+
+func tolisten(d *session.Defaults, addr string, debug bool) (listener.Listener, error) {
+	//if ssh {
+	//    return listener.NewListenSsh()
+	//}
+
+	if d.TLSKey == "none" && d.TLSCert == "none" {
+		return listener.NewListen9p(addr, "", "", debug)
 	}
 
-	defer ctrl.Cleanup()
+	return listener.NewListen9p(addr, d.TLSCert, d.TLSKey, debug)
+}
 
-	s.c = ctrl
-	s.dg = dg
-
-	ctrl.SetCommands(Commands...)
-	ctrl.CreateBuffer("server", "feed")
-
-	err = dg.Open()
-	if err != nil {
-		log.Fatal(err)
+func tostore(d *session.Defaults, ldir, debug bool) store.Filer {
+	if ldir {
+		return store.NewLogstore(d.Logdir.String(), debug)
 	}
 
-	defer dg.Close()
-	ctrl.Listen()
+	return store.NewRamstore(debug)
 }
