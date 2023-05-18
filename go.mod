@@ -3,7 +3,7 @@ module github.com/altid/discordfs
 go 1.19
 
 require (
-	github.com/altid/libs v0.2.6
+	github.com/altid/libs v0.2.8
 	github.com/bwmarrin/discordgo v0.27.1
 )
 

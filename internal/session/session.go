@@ -104,6 +104,7 @@ func (s *Session) Start(c controller.Controller) error {
 	client.AddHandler(s.chanCreate)
 	client.AddHandler(s.chanUpdate)
 	client.AddHandler(s.chanDelete)
+	client.AddHandler(s.guildDelete)
 	client.AddHandler(s.guildUpdate)
 	client.AddHandler(s.guildMemNew)
 	client.AddHandler(s.guildMemBye)
@@ -122,6 +123,9 @@ func (s *Session) Start(c controller.Controller) error {
 			if room.Type == discordgo.ChannelTypeGuildText {
 				name := fmt.Sprintf("%s-%s", guild.Name, room.Name)
 				s.ctrl.CreateBuffer(name)
+				if tw, e := s.ctrl.TitleWriter(name); e == nil {
+					fmt.Fprintf(tw, "%s\n", room.Topic)
+				}
 			}
 		}
 	}
