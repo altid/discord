@@ -95,7 +95,7 @@ func (s *Session) Start(c controller.Controller) error {
 	if err != nil {
 		return err
 	}
-	// Create a buttload of handlers here
+	// We have many handlers that can be added here, but the main ones here allow us to keep up bookkeeping for the very basic function
 	client.AddHandler(s.ready)
 	client.AddHandler(s.msgCreate)
 	client.AddHandler(s.msgUpdate)
@@ -160,8 +160,15 @@ func (s *Session) Handle(bufname string, l *markup.Lexer) error {
 			if err != nil {
 				return err
 			}
-
-			 _, err = s.Client.ChannelMessageSend(cid, m.String())
+			fw, err := s.ctrl.FeedWriter(bufname)
+			if err != nil {
+				return err
+			}
+			// Write our message to the buffer and the network, since they don't come back
+			msg := m.String()
+			feed := markup.NewCleaner(fw)
+			feed.WritefEscaped("%%[%s](blue): %s\n", s.Client.State.User.Username, msg[:m.Len()-1])
+			 _, err = s.Client.ChannelMessageSend(cid, msg)
 			return err
 		// TODO(halfwit) We want to allow markup as well
 		case markup.ErrorText:

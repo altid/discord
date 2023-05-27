@@ -18,17 +18,20 @@ func (s *Session) ready(ds *discordgo.Session, event *discordgo.Ready) {
 }
 
 func (s *Session) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate) {
-	c, err := ds.State.Channel(event.ChannelID)
+	c, err := s.Client.State.Channel(event.Message.ChannelID)
 	if err != nil {
 		s.debug(ctlErr, err)
 		return
 	}
 
-	s.debug(ctlSucceed, "msg Callback")
+	s.debug(ctlSucceed, c.Name)
 	// TODO: We could look for this in the recipients
 	name := c.Name
+	if c.Name == "" {
+		name = event.Message.Author.Username
+	}
 
-	g, err := ds.State.Guild(event.GuildID)
+	g, err := s.Client.State.Guild(event.Message.GuildID)
 	if err == nil {
 		name = fmt.Sprintf("%s-%s", g.Name, c.Name)
 	}
@@ -47,7 +50,11 @@ func (s *Session) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreat
 	feed := markup.NewCleaner(w)
 	defer feed.Close()
 
-	feed.WritefEscaped("%%[%s](blue): %s\n", event.Author.Username, event.Message.Content)
+	if event.Author.Username == s.Client.State.User.Username {
+		feed.WritefEscaped("%%[%s](blue): %s\n", event.Author.Username, event.Message.Content)
+	} else {
+		feed.WritefEscaped("%%[%s](grey): %s\n", event.Author.Username, event.Message.Content)
+	}
 }
 
 func (s *Session) msgUpdate(ds *discordgo.Session, event *discordgo.MessageUpdate) {
@@ -73,16 +80,21 @@ func (s *Session) chanCreate(ds *discordgo.Session, event *discordgo.ChannelCrea
 	var name string
 	switch event.Type {
 	case discordgo.ChannelTypeGuildText:
-		g, err := ds.State.Guild(event.GuildID)
+		g, err := s.Client.State.Guild(event.GuildID)
 		if err != nil {
 			s.debug(ctlErr, err)
 			return
 		}
 		name = fmt.Sprintf("%s-%s", g.Name, event.Name)
-	case discordgo.ChannelTypeDM, discordgo.ChannelTypeGroupDM:
-		// Use the state just in case
-		c, _ := s.Client.State.Channel(event.Channel.ID)
-		name = c.Name
+	case discordgo.ChannelTypeDM:
+		// Single DM, find the channel name by finding other recipient
+		for _, recipient := range event.Recipients {
+			if recipient.ID != s.Client.State.User.ID {
+				name = recipient.Username
+			}
+		}
+	case discordgo.ChannelTypeGroupDM:
+		// Group channel, can have a unique name with all the recipients
 	case discordgo.ChannelTypeGuildVoice:
 		return
 	}

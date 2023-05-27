@@ -37,7 +37,6 @@ func getChanID(s *Session, bufname string) (string, error) {
 			}
 		}
 	}
-
 	return "", errors.New("no such guild/channel")
 }
 /*
