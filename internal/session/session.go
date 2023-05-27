@@ -160,15 +160,9 @@ func (s *Session) Handle(bufname string, l *markup.Lexer) error {
 			if err != nil {
 				return err
 			}
-			fw, err := s.ctrl.FeedWriter(bufname)
-			if err != nil {
-				return err
-			}
 			// Write our message to the buffer and the network, since they don't come back
 			msg := m.String()
-			feed := markup.NewCleaner(fw)
-			feed.WritefEscaped("%%[%s](blue): %s\n", s.Client.State.User.Username, msg[:m.Len()-1])
-			 _, err = s.Client.ChannelMessageSend(cid, msg)
+			_, err = s.Client.ChannelMessageSend(cid, msg)
 			return err
 		// TODO(halfwit) We want to allow markup as well
 		case markup.ErrorText:

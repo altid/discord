@@ -23,24 +23,10 @@ func (s *Session) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreat
 		s.debug(ctlErr, err)
 		return
 	}
-
-	s.debug(ctlSucceed, c.Name)
-	// TODO: We could look for this in the recipients
-	name := c.Name
-	if c.Name == "" {
-		name = event.Message.Author.Username
-	}
-
-	g, err := s.Client.State.Guild(event.Message.GuildID)
-	if err == nil {
-		name = fmt.Sprintf("%s-%s", g.Name, c.Name)
-	}
-
-	s.debug(ctlJoin, name)
+	name := getName(s, event)
 	if !s.ctrl.HasBuffer(name) {
 		s.chanCreate(ds, &discordgo.ChannelCreate{Channel: c})
 	}
-
 	w, err := s.ctrl.FeedWriter(name)
 	if err != nil {
 		s.debug(ctlErr, err)
@@ -49,11 +35,20 @@ func (s *Session) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreat
 
 	feed := markup.NewCleaner(w)
 	defer feed.Close()
-
-	if event.Author.Username == s.Client.State.User.Username {
-		feed.WritefEscaped("%%[%s](blue): %s\n", event.Author.Username, event.Message.Content)
+	msg := event.Message.ContentWithMentionsReplaced()
+	for _, user := range event.Message.Mentions {
+		if user.ID == s.Client.State.User.ID {
+			feed.WritefEscaped("%%[%s](red): %s\n", event.Author.Username, msg)
+			if e := s.ctrl.Notification(name, event.Message.Author.Username, msg); e != nil {
+				s.debug(ctlErr, e)
+			}
+			return
+		}
+	}
+	if event.Message.Author.Username == s.Client.State.User.Username {
+		feed.WritefEscaped("%%[%s](blue): %s\n", event.Author.Username, msg)
 	} else {
-		feed.WritefEscaped("%%[%s](grey): %s\n", event.Author.Username, event.Message.Content)
+		feed.WritefEscaped("%%[%s](grey): %s\n", event.Author.Username, msg)
 	}
 }
 
