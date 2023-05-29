@@ -4,6 +4,8 @@ aqwari.net/retry v0.0.0-20180428204214-1281ce5d8df0 h1:BeD6U5TNwhMWxeydyi5xqpaNZ
 aqwari.net/retry v0.0.0-20180428204214-1281ce5d8df0/go.mod h1:XSNyyoM+OSg3vRmROPrS1lEpV7q/I9J1HAKMMxdUkU4=
 github.com/altid/libs v0.3.0 h1:y0EfoEFhinv1LpTvqZP8ueZUifNXJTQSRzeaouU8ito=
 github.com/altid/libs v0.3.0/go.mod h1:s9iFMxwmCWbHz0kks4L5F2fFV42n5pQ0NV9sBXS3GZg=
+github.com/altid/libs v0.3.1 h1:QqH7KWN9SglrvBiJ1xFauNvSKAFryHRIP1uAf6l8NV8=
+github.com/altid/libs v0.3.1/go.mod h1:s9iFMxwmCWbHz0kks4L5F2fFV42n5pQ0NV9sBXS3GZg=
 github.com/bwmarrin/discordgo v0.27.1 h1:ib9AIc/dom1E/fSIulrBwnez0CToJE113ZGt4HoliGY=
 github.com/bwmarrin/discordgo v0.27.1/go.mod h1:NJZpH+1AfhIcyQsPeuBKsUtYrRnjkyu0kIVMCHkZtRY=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
