@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/altid/libs/config/types"
 	"github.com/altid/libs/markup"
 	"github.com/altid/libs/service/commander"
 	"github.com/altid/libs/service/controller"
@@ -33,7 +32,7 @@ const (
 type Session struct {
 	ctx      context.Context
 	cancel   context.CancelFunc
-	Client *discordgo.Session
+	Client   *discordgo.Session
 	ctrl     controller.Controller
 	Defaults *Defaults
 	Verbose  bool
@@ -41,19 +40,18 @@ type Session struct {
 }
 
 type Defaults struct {
-	Address	string		 `altid:"address,prompt:IP address of Discord server"`
-	Auth	types.Auth	 `altid:"auth,prompt:Authentication method to use:,pick:factotum|password"`
+	Address string       `altid:"address,prompt:IP address of Discord server"`
+	Auth    string	     `altid:"auth,prompt:Authentication method to use:,pick:factotum|password"`
 	SSL     string       `altid:"ssl,prompt:SSL mode,pick:none|simple|certificate"`
-	User	string 		 `altid:"user,no_prompt"`
-	Logdir	types.Logdir `altid:"logdir,no_prompt"`
+	User    string       `altid:"user,no_prompt"`
+	Logdir  string       `altid:"logdir,no_prompt"`
 	TLSCert string       `altid:"tlscert,no_prompt"`
 	TLSKey  string       `altid:"tlskey,no_prompt"`
-
 }
 
-func (s *Session) Parse() {
+func (s *Session) Parse(ctx context.Context) {
 	s.debug = func(ctlItem, ...any) {}
-	s.ctx, s.cancel = context.WithCancel(context.Background())
+	s.ctx, s.cancel = context.WithCancel(ctx)
 
 	if s.Verbose {
 		s.debug = ctlLogging
@@ -91,7 +89,7 @@ func (s *Session) Start(c controller.Controller) error {
 	// but this saves us many allocations on using a channel receiver
 	s.ctrl = c
 	// TODO: oauth2 token?
-	client, err := discordgo.New(s.Defaults.Auth.String())
+	client, err := discordgo.New(s.Defaults.Auth)
 	if err != nil {
 		return err
 	}
@@ -178,7 +176,7 @@ func (s *Session) Handle(bufname string, l *markup.Lexer) error {
 }
 
 func ctlLogging(ctl ctlItem, args ...any) {
-	l := log.New(os.Stdout, "discordfs ", 0)
+	l := log.New(os.Stdout, "discord ", 0)
 
 	switch ctl {
 	case ctlSucceed:
@@ -197,7 +195,7 @@ func ctlLogging(ctl ctlItem, args ...any) {
 		l.Printf("input: data=\"%s\" bufname=\"%s\"", args[0], args[1])
 	case ctlCommand:
 		m := args[0].(*commander.Command)
-		l.Printf("command name=\"%s\" heading=\"%d\" sender=\"%s\" args=\"%s\" from=\"%s\"", m.Name, m.Heading, m.Sender, m.Args, m.From)
+		l.Printf("command name=\"%s\" heading=\"%d\" args=\"%s\" from=\"%s\"", m.Name, m.Heading, m.Args, m.From)
 	case ctlMsg:
 		m := args[0].(*commander.Command)
 		line := strings.Join(m.Args, " ")

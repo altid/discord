@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Session) ready(ds *discordgo.Session, event *discordgo.Ready) {
-	sysname := fmt.Sprintf("Discordfs on %s", runtime.GOOS)
+	sysname := fmt.Sprintf("alt/discord on %s", runtime.GOOS)
 	usd := discordgo.UpdateStatusData{
 		AFK: false,
 		Status: sysname,

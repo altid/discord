@@ -1,4 +1,4 @@
-project_name: discordfs
+project_name: discord
 before:
   hooks:
     - go mod download

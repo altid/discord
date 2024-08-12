@@ -1,16 +1,16 @@
-# Discordfs
+# Altid - Discord
 
-discordfs is an altid service allowing a user to connect to a discord network
+discord is an altid service allowing a user to connect to a discord network
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/altid/discordfs)](https://goreportcard.com/report/github.com/altid/discordfs) ![Tests](https://github.com/altid/discordfs/workflows/Tests/badge.svg) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
+[![Go Report Card](https://goreportcard.com/badge/github.com/altid/discord)](https://goreportcard.com/report/github.com/altid/discord) ![Tests](https://github.com/altid/discord/workflows/Tests/badge.svg) [![License](http://img.shields.io/:license-mit-blue.svg)](http://doge.mit-license.org)
 
-`go get github.com/altid/discordfs/cmd/discordfs@latest`
+`go get github.com/altid/discord/cmd/discord@latest`
 
 ## Usage
 
 *Currently, we use the password field and set that to our token. This isn't ideal, we will be moving to oauth2*
 
-`discordfs [-d] [-m] [-s <srv>] [-a <address>]`
+`discord [-d] [-m] [-s <srv>] [-a <address>]`
 - `<srv>` service name to use. (Default `discord`)
 
 ## Configuration
