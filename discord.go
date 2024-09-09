@@ -3,10 +3,10 @@ package discord
 import (
 	"context"
 
-	"github.com/altid/discord/internal/commands"
-	"github.com/altid/discord/internal/session"
-	"github.com/altid/libs/config"
-	"github.com/altid/libs/service"
+	"altd.ca/services/discord/internal/commands"
+	"altd.ca/services/discord/internal/session"
+	"altd.ca/libs/config"
+	"altd.ca/libs/services"
 )
 
 type Discord struct {

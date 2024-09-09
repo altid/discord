@@ -1,6 +1,6 @@
 package commands
 
-import "github.com/altid/libs/service/commander"
+import "altd.ca/libs/services/commander"
 
 var Commands = []*commander.Command{
 	{

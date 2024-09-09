@@ -1,14 +1,19 @@
 package session
 
 import (
+	"log"
 	"fmt"
 	"runtime"
 
-	"github.com/altid/libs/markup"
+	"altd.ca/libs/markup"
 	"github.com/bwmarrin/discordgo"
 )
 
 func (s *Session) ready(ds *discordgo.Session, event *discordgo.Ready) {
+	log.Printf("Ready event: version=%d user=%s\n", event.Version, event.User.Username)
+	// There's guildIDs and privatechannels an event 
+
+	// Set status
 	sysname := fmt.Sprintf("alt/discord on %s", runtime.GOOS)
 	usd := discordgo.UpdateStatusData{
 		AFK: false,
@@ -17,7 +22,34 @@ func (s *Session) ready(ds *discordgo.Session, event *discordgo.Ready) {
 	ds.UpdateStatusComplex(usd)
 }
 
+func (s *Session) userUpdate(ds *discordgo.Session, event *discordgo.UserUpdate) {
+ 	log.Printf("UserUpdate: %s\n", event.User.Username)
+	// Probably can ignore this, outside of nick logging
+}
+
+func (s *Session) resumed(ds *discordgo.Session, event *discordgo.Resumed) {
+	log.Println("Resumed")
+}
+
+func (s *Session) webhooksUpdate(ds *discordgo.Session, event *discordgo.WebhooksUpdate) {
+	log.Printf("Webhooks Update: %s %s\n", event.GuildID, event.ChannelID)
+}
+
+func (s *Session) rateLimit(ds *discordgo.Session, event *discordgo.RateLimit) {
+	log.Println("Rate limited")
+}
+
+func (s *Session) connect(ds *discordgo.Session, event *discordgo.Connect) {
+	log.Println("Connected")
+}
+
+func (s *Session) disconnect(ds *discordgo.Session, event *discordgo.Disconnect) {
+	log.Println("Disconnected")
+}
+
+// This seems like it could be greatly cleaned up
 func (s *Session) msgCreate(ds *discordgo.Session, event *discordgo.MessageCreate) {
+	log.Println("MsgCreate")
 	c, err := s.Client.State.Channel(event.Message.ChannelID)
 	if err != nil {
 		s.debug(ctlErr, err)
@@ -130,8 +162,4 @@ func (s *Session) guildMemBye(ds *discordgo.Session, event *discordgo.GuildMembe
 
 func (s *Session) guildMemUpd(ds *discordgo.Session, event *discordgo.GuildMemberUpdate) {
 	// Update nicklist
-}
-
-func (s *Session) userUpdate(ds *discordgo.Session, event *discordgo.UserUpdate) {
-	// Probably can ignore this, outside of nick logging
 }

@@ -3,14 +3,13 @@ package session
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"strings"
 
-	"github.com/altid/libs/markup"
-	"github.com/altid/libs/service/commander"
-	"github.com/altid/libs/service/controller"
+	"atld.ca/libs/markup"
+	"altd.ca/libs/services/commander"
+	"altd.ca/libs/services/controller"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -58,7 +57,6 @@ func (s *Session) Parse(ctx context.Context) {
 	}
 }
 
-// Future, multiuser
 func (s *Session) Connect(Username string) error {
 	return nil
 }
@@ -85,58 +83,64 @@ func (s *Session) Run(c controller.Controller, cmd *commander.Command) error {
 }
 
 func (s *Session) Start(c controller.Controller) error {
-	// We would like to do this any other way ideally
-	// but this saves us many allocations on using a channel receiver
-	s.ctrl = c
-	// TODO: oauth2 token?
-	client, err := discordgo.New(s.Defaults.Auth)
+	// TODO: oauth2 instead, uses a Bearer token
+	// -conf will spit out a link, click it, authorize it
+	client, err := discordgo.New("Bearer " + s.Defaults.Auth)
 	if err != nil {
 		return err
 	}
-	// We have many handlers that can be added here, but the main ones here allow us to keep up bookkeeping for the very basic function
+	// Top Level
 	client.AddHandler(s.ready)
+	client.AddHandler(s.userUpdate)
+	client.AddHandler(s.resumed)
+	client.AddHandler(s.webhooksUpdate)
+	client.AddHandler(s.rateLimit) //discordgo
+	client.AddHandler(s.connect) //discordgo
+	client.AddHandler(s.disconnect) //discordgo
+	// Messages
 	client.AddHandler(s.msgCreate)
 	client.AddHandler(s.msgUpdate)
 	client.AddHandler(s.msgDelete)
-	client.AddHandler(s.chanPins)
+	//client.AddHandler(s.msgReactionAdd)
+	//client.AddHandler(s.msgRemove)
+	//client.AddHandler(s.msgRemoveAll)
+	//client.AddHandler(s.msgDeleteBulk)
+	// Channels
+	//client.AddHandler(s.chanPinsUpdate)
 	client.AddHandler(s.chanCreate)
 	client.AddHandler(s.chanUpdate)
 	client.AddHandler(s.chanDelete)
+	// Threads
+	//client.AddHandler(s.threadCreate)
+	//client.AddHandler(s.threadUpdate)
+	//client.AddHandler(s.threadDelete)
+	//client.AddHandler(s.threadListSync)
+	//client.AddHandler(s.threadMemberUpdate)
+	//client.AddHandler(s.threadMembersUpdate)
+	// Guilds
 	client.AddHandler(s.guildDelete)
 	client.AddHandler(s.guildUpdate)
 	client.AddHandler(s.guildMemNew)
 	client.AddHandler(s.guildMemBye)
 	client.AddHandler(s.guildMemUpd)
-	client.AddHandler(s.userUpdate)
+	//client.AddHandler(s.guildMembersChunk)
+	//client.AddHandler(s.guildRoleCreate)
+	//client.AddHandlers(s.guildRoleAdd)
+	//client.AddHandlers(s.guildRoleDelete)
+	//client.AddHandlers(s.guildEmojisUpdate)
+	// Are these needed for DM, etc?
+	// InviteCreate
+	// InviteDelete
+	
 	s.debug(ctlSucceed, "registered client")
-
+	s.ctrl = c
 	s.Client = client
 	if e := s.Client.Open(); e != nil {
+log.Println(e)
 		return e
 	}
-
-	for _, guild := range client.State.Guilds {
-		for _, room := range guild.Channels {
-			// We only really care about text rooms for our needs
-			if room.Type == discordgo.ChannelTypeGuildText {
-				name := fmt.Sprintf("%s-%s", guild.Name, room.Name)
-				s.ctrl.CreateBuffer(name)
-				if tw, e := s.ctrl.TitleWriter(name); e == nil {
-					fmt.Fprintf(tw, "%s\n", room.Topic)
-				}
-			}
-		}
-	}
-
+log.Println("REturning from start")
 	return nil
-}
-
-func (s *Session) Listen(c controller.Controller) {
-	if e := s.Start(c); e != nil {
-		log.Fatal(e)
-	}
-
-	<-s.ctx.Done()
 }
 
 func (s *Session) Command(cmd *commander.Command) error {

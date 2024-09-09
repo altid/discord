@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/altid/discord"
+	"altd.ca/services/discord"
 )
 
 var (
