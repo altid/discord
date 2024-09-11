@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"atld.ca/libs/markup"
+	"altd.ca/libs/markup"
 	"altd.ca/libs/services/commander"
 	"altd.ca/libs/services/controller"
 	"github.com/bwmarrin/discordgo"
